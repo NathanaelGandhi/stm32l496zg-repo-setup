@@ -1,0 +1,13 @@
+{
+    "configurations": [
+        {
+            "name": "${workspaceFolderBasename}",
+            "cwd": "${workspaceRoot}",
+            "executable": "build/${workspaceFolderBasename}.elf",
+            "request": "attach",
+            "type": "cortex-debug",
+            "servertype": "stutil",
+            "v1": false
+        }
+    ]
+}

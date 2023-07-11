@@ -1,0 +1,9 @@
+################################################################################
+# Title:  Clang format file for C/C++ projects
+# Author: Nathanael Gandhi | gist.github.com/NathanaelGandhi
+# Notes:  see https://clang.llvm.org/docs/ClangFormatStyleOptions.html
+################################################################################
+---
+DisableFormat: true
+SortIncludes: Never
+################################################################################

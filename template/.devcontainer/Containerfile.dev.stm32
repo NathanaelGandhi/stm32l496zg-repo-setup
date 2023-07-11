@@ -1,0 +1,61 @@
+################################################################################
+# Title:  Development Container for STM32 projects
+# Author: Nathanael Gandhi | gist.github.com/NathanaelGandhi
+# Notes:  Container for all project dependencies. Build with either Docker or 
+#         Podman. Intended to be run using Distrobox or VSCode Dev Container.
+################################################################################
+# Build Instructions Podman/Distrobox:  
+#   Image:  podman build -t dev-stm32-img -f ./utils/Containerfile.dev.stm32 .
+#   Cont:   distrobox create dev-stm32 -i dev-stm32-img
+#   Run:    distrobox enter dev-stm32      
+################################################################################
+# Build Instructions Docker/VSCode Dev Container:  
+#   VSCode:    Reopen folder in Container
+################################################################################
+# Base Configuration
+FROM ubuntu:22.04
+ENV LANG C.UTF-8
+ENV LC_ALL C.UTF-8
+################################################################################
+# Update apt
+RUN apt-get update
+################################################################################
+# Use cached packages if available
+# Note: on-host ```sudo apt install apt-cacher-ng```
+ARG USE_CACHED_APT_PACKAGES='true'
+RUN if [ "$USE_CACHED_APT_PACKAGES" = "true" ]; then \
+        echo "Using cached apt packages if available"; \
+        apt-get install auto-apt-proxy -y && auto-apt-proxy; \
+     else \
+        echo "Not using cached apt packages"; \
+    fi
+################################################################################
+# Install user tools
+RUN apt-get install -y git nano tree
+################################################################################
+# Install extend & theme ZSH shell
+RUN apt-get install -y wget zsh fonts-powerline && \
+	echo "[config-zsh] installing oh-my-zsh" && \
+	wget https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh -O - | zsh || true && \
+	echo "[config-zsh] installing oh-my-zsh plugins" && \
+	git clone https://github.com/zsh-users/zsh-autosuggestions ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-autosuggestions && \
+	git clone https://github.com/zsh-users/zsh-syntax-highlighting.git ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-syntax-highlighting && \
+	sed -i 's|plugins=(git)|plugins=(git zsh-autosuggestions zsh-syntax-highlighting)|g' ~/.zshrc && \
+	echo "[config-zsh] setting theme to agnoster" && \
+	sed -i 's|ZSH_THEME="robbyrussell"|ZSH_THEME="agnoster"|g' ~/.zshrc && \ 
+	sed -i 's|echo -n "%{%f%}"|echo -n "\n[%D{%H:%M:%S}] >%{%f%}"|g' ~/.oh-my-zsh/themes/agnoster.zsh-theme
+# Run zsh on container start
+CMD [ "zsh" ]
+################################################################################
+# Install project tools
+RUN apt install -y \ 
+	git clang-format wget cmake stlink-tools gdb-multiarch libusb-1.0-0
+	# # build tools for openocd
+	# telnet openocd
+
+# Install arm-none-eabi compiler
+RUN wget https://github.com/xpack-dev-tools/arm-none-eabi-gcc-xpack/releases/download/v12.2.1-1.2/xpack-arm-none-eabi-gcc-12.2.1-1.2-linux-x64.tar.gz
+RUN tar xf xpack-arm-none-eabi-gcc-12.2.1-1.2-linux-x64.tar.gz
+RUN cp -rf xpack-arm-none-eabi-gcc-12.2.1-1.2/* /usr/local/
+RUN rm -rf xpack-arm-none-eabi-gcc-12.2.1-1.2
+################################################################################
