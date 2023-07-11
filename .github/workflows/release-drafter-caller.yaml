@@ -8,6 +8,7 @@ on:
   # pull_request event is required only for autolabeler
   pull_request:
     # Only following types (opened, reopened, synchronize) are handled by the action, but one can default to all as well
+  workflow_dispatch:
 
 permissions:
   contents: write
